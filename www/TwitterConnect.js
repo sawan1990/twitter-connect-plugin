@@ -9,7 +9,11 @@ var TwitterConnect = {
 	},
 	showUser: function (successCallback, errorCallback) {
 		exec(successCallback, errorCallback, 'TwitterConnect', 'showUser', []);
+	},
+	verifyUser: function (successCallback, errorCallback) {
+		exec(successCallback, errorCallback, 'TwitterConnect', 'verifyUser', []);
 	}
+
 };
 
 module.exports = TwitterConnect;

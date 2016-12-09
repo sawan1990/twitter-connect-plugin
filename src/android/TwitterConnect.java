@@ -61,6 +61,10 @@ public class TwitterConnect extends CordovaPlugin {
 			showUser(callbackContext);
 			return true;
 		}
+		if (action.equals("verifyUser")) {
+			verifyUser(callbackContext);
+			return true;
+		}
 		return false;
 	}
 
@@ -114,6 +118,9 @@ public class TwitterConnect extends CordovaPlugin {
 	interface UserService {
 		@GET("/1.1/users/show.json")
 		void show(@Query("user_id") long id, Callback<Response> cb);
+		
+		@GET("/1.1/account/verify_credentials.json")
+		void verifyUser(@Query("include_email") String include_email, Callback<Response> cb);
 	}
 
 	private void showUser(final CallbackContext callbackContext) {
@@ -123,6 +130,30 @@ public class TwitterConnect extends CordovaPlugin {
 				UserServiceApi twitterApiClient = new UserServiceApi(Twitter.getSessionManager().getActiveSession());
 				UserService userService = twitterApiClient.getCustomService();
 				userService.show(Twitter.getSessionManager().getActiveSession().getUserId(), new Callback<Response>() {
+					@Override
+					public void success(Result<Response> result) {
+						try {
+							callbackContext.success(new JSONObject(new String(((TypedByteArray) result.response.getBody()).getBytes())));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					}
+					@Override
+					public void failure(TwitterException exception) {
+						Log.v(LOG_TAG, "Twitter API Failed "+exception.getLocalizedMessage());
+						callbackContext.error(exception.getLocalizedMessage());
+					}
+				});
+			}
+		});
+	}
+	private void verifyUser(final CallbackContext callbackContext) {
+		cordova.getThreadPool().execute(new Runnable() {
+			@Override
+			public void run() {
+				UserServiceApi twitterApiClient = new UserServiceApi(Twitter.getSessionManager().getActiveSession());
+				UserService userService = twitterApiClient.getCustomService();
+				userService.verifyUser("true", new Callback<Response>() {
 					@Override
 					public void success(Result<Response> result) {
 						try {
